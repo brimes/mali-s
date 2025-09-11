@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mali-s:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./data/salon.db
+      - NODE_OPTIONS=--max-old-space-size=512
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0

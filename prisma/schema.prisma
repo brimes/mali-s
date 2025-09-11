@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de usuários para autenticação e controle de acesso
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  phone          String?
+  password       String
+  userType       String   // "ADMIN" | "COMPANY_GROUP" | "COMPANY" | "EMPLOYEE"
+  photo          String?
+  active         Boolean  @default(true)
+  
+  // Relacionamentos
+  companyId      String?
+  company        Company? @relation(fields: [companyId], references: [id])
+  
+  companyGroupId String?
+  companyGroup   CompanyGroup? @relation(fields: [companyGroupId], references: [id])
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Campos necessários para NextAuth
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+
+  @@map("users")
+}
+
+// Tipos de usuário (usando String no SQLite)
+// ADMIN: Administrador geral do sistema
+// COMPANY_GROUP: Administrador de várias lojas  
+// COMPANY: Usuário da loja (proprietário/gerente)
+// EMPLOYEE: Funcionário da loja
+
+// Modelo para grupos de empresas (franquias, redes)
+model CompanyGroup {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relacionamentos
+  users       User[]
+  companies   Company[]
+
+  @@map("company_groups")
+}
+
+// Modelo para empresas/lojas
+model Company {
+  id            String    @id @default(cuid())
+  name          String
+  cnpj          String?   @unique
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  active        Boolean   @default(true)
+  
+  // Relacionamentos
+  companyGroupId String?
+  companyGroup   CompanyGroup? @relation(fields: [companyGroupId], references: [id], onDelete: SetNull)
+  
+  users         User[]
+  funcionarios  Funcionario[]
+  clientes      Cliente[]
+  servicos      Servico[]
+  agendamentos  Agendamento[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("companies")
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Cliente {
+  id           String        @id @default(cuid())
+  nome         String
+  telefone     String        @unique
+  email        String?
+  observacoes  String?
+  createdAt    DateTime      @default(now())
+  
+  // Relacionamento com empresa
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  agendamentos Agendamento[]
+
+  @@map("clientes")
+}
+
+model Funcionario {
+  id             String        @id @default(cuid())
+  nome           String
+  telefone       String
+  especialidades String        // JSON array como string ["corte", "pintura", "manicure"]
+  horarioInicio  String        // "08:00"
+  horarioFim     String        // "18:00"
+  diasTrabalho   String        // JSON array como string ["segunda", "terca", "quarta"]
+  ativo          Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  
+  // Relacionamento com empresa
+  companyId      String
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  agendamentos   Agendamento[]
+
+  @@map("funcionarios")
+}
+
+model Servico {
+  id           String        @id @default(cuid())
+  nome         String
+  descricao    String?
+  duracao      Int           // em minutos
+  preco        Float
+  categoria    String        // "cabelo", "unha", "estética"
+  ativo        Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  
+  // Relacionamento com empresa
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  agendamentos Agendamento[]
+
+  @@map("servicos")
+}
+
+model Agendamento {
+  id            String      @id @default(cuid())
+  dataHora      DateTime
+  clienteId     String
+  funcionarioId String
+  servicoId     String
+  status        String      @default("agendado") // "agendado", "concluido", "cancelado"
+  observacoes   String?
+  preco         Float?      // permite override do preço do serviço
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Relacionamento com empresa
+  companyId     String
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  cliente       Cliente     @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  funcionario   Funcionario @relation(fields: [funcionarioId], references: [id], onDelete: Cascade)
+  servico       Servico     @relation(fields: [servicoId], references: [id], onDelete: Cascade)
+
+  @@map("agendamentos")
+}
