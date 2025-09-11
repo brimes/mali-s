@@ -1,0 +1,10 @@
+# Public Assets
+
+Esta pasta contém arquivos estáticos que serão servidos diretamente pelo Next.js.
+
+Arquivos colocados aqui estarão disponíveis em `/nome-do-arquivo`.
+
+Exemplos:
+- `public/logo.png` → `/logo.png`
+- `public/favicon.ico` → `/favicon.ico`
+- `public/robots.txt` → `/robots.txt`
