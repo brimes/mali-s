@@ -88,6 +88,58 @@ npm install
 npm run db:generate
 npm run db:push
 
+# Opcional: Popular com dados de exemplo
+npm run db:seed
+
+# Executar em desenvolvimento
+npm run dev
+```
+
+### 🔐 Inicialização Automática do Administrador
+
+O sistema possui **inicialização automática** do usuário administrador de forma segura. Quando a aplicação é iniciada pela primeira vez ou quando o banco de dados não existe, o sistema automaticamente:
+
+1. **Verifica a existência do banco de dados**
+2. **Cria a estrutura necessária** se não existir  
+3. **Cria o usuário administrador padrão** se não existir
+
+**Credenciais do Admin Padrão:**
+- **Email**: `admin@mali-s.com`
+- **Senha**: `Mali#2024@Admin!`
+
+> ⚠️ **IMPORTANTE**: Altere a senha padrão após o primeiro login por segurança!
+
+#### Métodos de Inicialização
+
+**Desenvolvimento** (automático):
+```bash
+npm run dev    # Executa inicialização + desenvolvimento
+```
+
+**Produção Docker** (automático):
+```bash
+docker build -t mali-s .
+docker run -p 3000:3000 mali-s  # Inicialização automática no container
+```
+
+**Manual**:
+```bash
+# Executar script de inicialização manualmente
+npm run db:init
+# ou diretamente
+node scripts/init-db.js
+```
+
+#### 🔒 Recursos de Segurança
+
+- ✅ **Inicialização server-side apenas** - Sem endpoints públicos expostos
+- ✅ **Verificação de duplicatas** - Não recria se admin já existe
+- ✅ **Hash bcrypt** - Senha com 12 rounds de encriptação
+- ✅ **Fallback gracioso** - Aplicação continua mesmo com erro na inicialização
+- ✅ **Logs informativos** - Status detalhado do processo
+
+> �️ **Nota de Segurança**: A inicialização é feita exclusivamente no lado servidor através de scripts, sem exposição de endpoints da API ou funcionalidades client-side que possam ser exploradas.
+
 # Popular com dados de exemplo (incluindo usuários)
 npm run db:seed
 npx tsx prisma/seed-auth.ts
