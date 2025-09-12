@@ -69,7 +69,18 @@ setup_database() {
     echo "🗃️  Configurando banco de dados..."
     cd $APP_DIR
     
-    # Gerar Prisma client
+    # Instalar dependências nativas necessárias para o Prisma
+    apt-get install -y openssl libssl3 ca-certificates
+    
+    # Limpar cache do Prisma para forçar regeneração
+    rm -rf node_modules/.prisma
+    rm -rf node_modules/@prisma
+    
+    # Reinstalar Prisma para arquitetura correta
+    npm install @prisma/client prisma --force
+    
+    # Gerar Prisma client para a arquitetura atual
+    npx prisma generate --no-engine
     npx prisma generate
     
     # Aplicar migrações
