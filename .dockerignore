@@ -81,4 +81,7 @@ coverage/
 
 # Prisma (keep schema but exclude generated files)
 prisma/migrations/
-prisma/data/
+prisma/data/salon.db
+prisma/data/salon.db-journal
+# Manter banco inicial para Docker
+!prisma/data/salon.initial.db
