@@ -72,6 +72,10 @@ setup_database() {
     # Instalar dependências nativas necessárias para o Prisma
     apt-get install -y openssl libssl3 ca-certificates
     
+    # Criar estrutura de diretórios necessária
+    mkdir -p prisma/data
+    mkdir -p logs
+    
     # Limpar cache do Prisma para forçar regeneração
     rm -rf node_modules/.prisma
     rm -rf node_modules/@prisma
@@ -83,14 +87,26 @@ setup_database() {
     npx prisma generate --no-engine
     npx prisma generate
     
-    # Aplicar migrações
-    npx prisma db push
+    # Aplicar schema ao banco (criará o arquivo se não existir)
+    npx prisma db push --force-reset
     
-    # Executar seed se banco estiver vazio
-    if [ ! -f "data/salon.db" ]; then
-        npm run db:seed
-        echo "✅ Banco populado com dados iniciais"
+    # Verificar se banco foi criado
+    if [ -f "prisma/data/salon.db" ]; then
+        echo "✅ Banco de dados criado: prisma/data/salon.db"
+        
+        # Configurar permissões corretas
+        chown www-data:www-data prisma/data/salon.db
+        chmod 664 prisma/data/salon.db
+    else
+        echo "❌ Erro: Banco de dados não foi criado!"
+        exit 1
     fi
+    
+    # Executar seed se banco estiver vazio ou for novo
+    npm run db:seed || echo "⚠️  Seed falhou ou já foi executado"
+    
+    # Criar usuário admin usando script específico
+    npx tsx scripts/init-db.ts || echo "⚠️  Criação do admin falhou ou já existe"
     
     echo "✅ Banco de dados configurado"
 }

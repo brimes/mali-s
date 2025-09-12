@@ -40,6 +40,8 @@ next-env.d.ts
 /prisma/migrations
 *.db
 *.db-journal
+# Permitir banco inicial para Docker
+!salon.initial.db
 
 # logs
 /logs
