@@ -26,10 +26,11 @@ help: ## Mostra esta ajuda
 	@echo ""
 	@echo "$(YELLOW)Exemplos de uso:$(NC)"
 	@echo "  make setup       # Configuração inicial (primeira vez)"
-	@echo "  make up          # Inicia a aplicação"
+	@echo "  make dev-up      # Desenvolvimento com hot reload"
+	@echo "  make up          # Produção local"
+	@echo "  make deploy      # Build + push para GHCR"
 	@echo "  make logs        # Ver logs da aplicação"
 	@echo "  make down        # Para a aplicação"
-	@echo "  make rebuild     # Rebuild e restart"
 
 # ===== COMANDOS PRINCIPAIS PARA DESENVOLVIMENTO =====
 
@@ -174,9 +175,42 @@ reset: ## 🔄 Reset completo (equivale a clean-all + setup)
 
 # ===== COMANDOS AVANÇADOS =====
 
-login: ## Faz login no registry
+login: ## 🔐 Faz login no GHCR
 	@echo "$(BLUE)🔐 Fazendo login no GHCR...$(NC)"
 	@docker login ghcr.io
+
+deploy: ## 🚀 Build e push completo para GHCR (produção)
+	@echo "$(BLUE)🚀 Iniciando deploy completo para GHCR...$(NC)"
+	@echo "$(YELLOW)Imagem: $(IMAGE_NAME):$(TAG)$(NC)"
+	@echo "$(BLUE)🔐 Fazendo login no GHCR...$(NC)"
+	@docker login ghcr.io
+	@echo "$(BLUE)🏗️  Construindo imagem Docker para produção...$(NC)"
+	@docker buildx create --name mali-s-builder --use --bootstrap 2>/dev/null || true
+	@docker buildx build \
+		--file Dockerfile \
+		--platform $(PLATFORMS) \
+		--tag "$(IMAGE_NAME):$(TAG)" \
+		--tag "$(IMAGE_NAME):latest" \
+		--push \
+		.
+	@echo "$(GREEN)✅ Deploy concluído com sucesso!$(NC)"
+	@echo "$(BLUE)� Disponível em: https://github.com/brimes/mali-s/packages$(NC)"
+
+deploy-quick: ## ⚡ Build e push rápido (apenas arquitetura local)
+	@echo "$(BLUE)⚡ Deploy rápido para GHCR...$(NC)"
+	@echo "$(YELLOW)Imagem: $(IMAGE_NAME):$(TAG)$(NC)"
+	@echo "$(BLUE)�🔐 Fazendo login no GHCR...$(NC)"
+	@docker login ghcr.io
+	@echo "$(BLUE)🏗️  Build local ($(shell uname -m))...$(NC)"
+	@docker build --file Dockerfile --tag "$(IMAGE_NAME):$(TAG)" .
+	@echo "$(BLUE)📤 Fazendo push...$(NC)"
+	@docker push "$(IMAGE_NAME):$(TAG)"
+	@if [ "$(TAG)" != "latest" ]; then \
+		docker tag "$(IMAGE_NAME):$(TAG)" "$(IMAGE_NAME):latest"; \
+		docker push "$(IMAGE_NAME):latest"; \
+	fi
+	@echo "$(GREEN)✅ Deploy rápido concluído!$(NC)"
+	@echo "$(BLUE)📍 Disponível em: https://github.com/brimes/mali-s/packages$(NC)"
 
 build: setup-buildx ## Constrói imagem multi-plataforma
 	@echo "$(BLUE)🏗️  Construindo imagem Docker multi-plataforma...$(NC)"
