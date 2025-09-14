@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: mali-s
     ports:
       - "3000:3000"
     environment:
@@ -12,8 +13,21 @@ services:
       - DATABASE_URL=file:./data/salon.db
       - NODE_OPTIONS=--max-old-space-size=512
       - NEXT_TELEMETRY_DISABLED=1
+      - NEXTAUTH_SECRET=mali-s-secret-key-production
+      - NEXTAUTH_URL=http://localhost:3000
     volumes:
       - ./data:/app/data
+      - ./logs:/app/logs
     restart: unless-stopped
     mem_limit: 1g
     cpus: 1.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mali-s-data:
+    driver: local
