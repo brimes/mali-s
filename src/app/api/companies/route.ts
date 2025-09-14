@@ -4,7 +4,13 @@ import { z } from 'zod'
 
 const companySchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  description: z.string().optional(),
+  cnpj: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email('Email inválido').optional().or(z.literal('')),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
   companyGroupId: z.string().optional()
 })
 
@@ -50,7 +56,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const validatedData = companySchema.parse(body)
+    
+    // Filtrar campos vazios
+    const filteredData = Object.fromEntries(
+      Object.entries(body).filter(([_, value]) => value !== '' && value !== undefined)
+    )
+    
+    const validatedData = companySchema.parse(filteredData)
 
     const company = await prisma.company.create({
       data: validatedData,
