@@ -54,29 +54,32 @@ export default function NovoClientePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Link href="/clientes">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
         </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Novo Cliente</h1>
-          <p className="text-gray-600">Cadastre um novo cliente</p>
+        <div className="flex-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Novo Cliente</h1>
+          <p className="text-sm lg:text-base text-gray-600">Cadastre um novo cliente</p>
         </div>
       </div>
 
+      {/* Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Dados do Cliente</CardTitle>
+          <CardTitle className="text-base lg:text-lg">Dados do Cliente</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
+            {/* Name and Phone Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome *</Label>
+                <Label htmlFor="nome" className="text-sm lg:text-base">Nome *</Label>
                 <Input
                   id="nome"
                   name="nome"
@@ -84,11 +87,12 @@ export default function NovoClientePage() {
                   onChange={handleChange}
                   required
                   placeholder="Nome completo"
+                  className="text-sm lg:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone *</Label>
+                <Label htmlFor="telefone" className="text-sm lg:text-base">Telefone *</Label>
                 <Input
                   id="telefone"
                   name="telefone"
@@ -96,12 +100,14 @@ export default function NovoClientePage() {
                   onChange={handleChange}
                   required
                   placeholder="(11) 99999-9999"
+                  className="text-sm lg:text-base"
                 />
               </div>
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm lg:text-base">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -109,11 +115,13 @@ export default function NovoClientePage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="cliente@email.com"
+                className="text-sm lg:text-base"
               />
             </div>
 
+            {/* Observations */}
             <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
+              <Label htmlFor="observacoes" className="text-sm lg:text-base">Observações</Label>
               <Textarea
                 id="observacoes"
                 name="observacoes"
@@ -121,16 +129,22 @@ export default function NovoClientePage() {
                 onChange={handleChange}
                 placeholder="Observações sobre o cliente..."
                 rows={3}
+                className="text-sm lg:text-base resize-none"
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading}>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+              <Button 
+                type="submit" 
+                disabled={loading} 
+                className="w-full sm:w-auto text-sm lg:text-base"
+              >
                 <Save className="h-4 w-4 mr-2" />
                 {loading ? 'Salvando...' : 'Salvar Cliente'}
               </Button>
-              <Link href="/clientes">
-                <Button type="button" variant="outline">
+              <Link href="/clientes" className="w-full sm:w-auto">
+                <Button type="button" variant="outline" className="w-full text-sm lg:text-base">
                   Cancelar
                 </Button>
               </Link>

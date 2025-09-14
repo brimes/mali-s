@@ -137,32 +137,34 @@ export function AdminPanel() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header do Painel Admin */}
       <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
         <CardHeader>
-          <CardTitle className="flex items-center text-xl">
-            <Shield className="mr-3 h-6 w-6 text-purple-600" />
-            Painel Administrativo
-            <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-3 text-lg lg:text-xl">
+            <div className="flex items-center">
+              <Shield className="mr-3 h-5 w-5 lg:h-6 lg:w-6 text-purple-600" />
+              Painel Administrativo
+            </div>
+            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full w-fit">
               ADMIN
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 mb-4">
+          <p className="text-sm lg:text-base text-gray-600 mb-4">
             Controle total do sistema Mali-S. Gerencie usuários, empresas e monitore estatísticas globais.
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={handleNavigateToUsers}>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+            <Button size="sm" className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto" onClick={handleNavigateToUsers}>
               <UserPlus className="mr-2 h-4 w-4" />
               Criar Usuário
             </Button>
-            <Button size="sm" variant="outline" onClick={handleNavigateToCompanies}>
+            <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={handleNavigateToCompanies}>
               <Building className="mr-2 h-4 w-4" />
               Gerenciar Empresas
             </Button>
-            <Button size="sm" variant="outline" onClick={handleNavigateToSettings}>
+            <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={handleNavigateToSettings}>
               <Settings className="mr-2 h-4 w-4" />
               Configurações
             </Button>
@@ -173,21 +175,21 @@ export function AdminPanel() {
       {/* Estatísticas Globais */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart3 className="mr-2 h-5 w-5" />
+          <CardTitle className="flex items-center text-base lg:text-lg">
+            <BarChart3 className="mr-2 h-4 w-4 lg:h-5 lg:w-5" />
             Estatísticas Globais do Sistema
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {adminStats.map((stat, index) => (
-              <div key={index} className={`p-4 rounded-lg ${stat.bgColor}`}>
+              <div key={index} className={`p-3 lg:p-4 rounded-lg ${stat.bgColor}`}>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs lg:text-sm font-medium text-gray-600 truncate">{stat.title}</p>
+                    <p className={`text-xl lg:text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                   </div>
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                  <stat.icon className={`h-6 w-6 lg:h-8 lg:w-8 ${stat.color} flex-shrink-0 ml-2`} />
                 </div>
               </div>
             ))}
@@ -196,24 +198,24 @@ export function AdminPanel() {
       </Card>
 
       {/* Ações Rápidas Admin */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5" />
+            <CardTitle className="flex items-center text-base lg:text-lg">
+              <Users className="mr-2 h-4 w-4 lg:h-5 lg:w-5" />
               Gerenciar Usuários
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline" onClick={handleNavigateToUsers}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={handleNavigateToUsers}>
               <UserPlus className="mr-2 h-4 w-4" />
               Criar Novo Usuário
             </Button>
-            <Button className="w-full justify-start" variant="outline" onClick={handleNavigateToUsers}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={handleNavigateToUsers}>
               <Users className="mr-2 h-4 w-4" />
               Listar Todos os Usuários
             </Button>
-            <Button className="w-full justify-start" variant="outline" onClick={handleNavigateToUsers}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={handleNavigateToUsers}>
               <Shield className="mr-2 h-4 w-4" />
               Gerenciar Permissões
             </Button>
@@ -222,21 +224,21 @@ export function AdminPanel() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building2 className="mr-2 h-5 w-5" />
+            <CardTitle className="flex items-center text-base lg:text-lg">
+              <Building2 className="mr-2 h-4 w-4 lg:h-5 lg:w-5" />
               Gerenciar Empresas
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline" onClick={handleNavigateToCompanies}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={handleNavigateToCompanies}>
               <Building2 className="mr-2 h-4 w-4" />
               Criar Grupo de Empresas
             </Button>
-            <Button className="w-full justify-start" variant="outline" onClick={handleNavigateToCompanies}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={handleNavigateToCompanies}>
               <Building className="mr-2 h-4 w-4" />
               Criar Nova Empresa
             </Button>
-            <Button className="w-full justify-start" variant="outline" onClick={() => router.push('/admin/reports')}>
+            <Button className="w-full justify-start text-sm lg:text-base" variant="outline" onClick={() => router.push('/admin/reports')}>
               <BarChart3 className="mr-2 h-4 w-4" />
               Relatórios Globais
             </Button>

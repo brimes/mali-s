@@ -1,6 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
+import { MobileSidebar } from '@/components/mobile-sidebar'
+import { MobileHeader } from '@/components/mobile-header'
 import { useAuthRequired } from '@/hooks/useAuthRequired'
 
 export default function DashboardLayout({
@@ -9,6 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { session, isLoading } = useAuthRequired()
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
@@ -29,12 +33,31 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6">
-          {children}
-        </div>
-      </main>
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+      
+      {/* Mobile Sidebar */}
+      <MobileSidebar 
+        isOpen={isMobileSidebarOpen} 
+        onClose={() => setIsMobileSidebarOpen(false)} 
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile Header */}
+        <MobileHeader 
+          onMenuClick={() => setIsMobileSidebarOpen(true)}
+        />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto p-4 lg:p-6">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

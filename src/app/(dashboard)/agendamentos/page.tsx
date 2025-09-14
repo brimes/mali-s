@@ -115,77 +115,86 @@ export default function AgendamentosPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agendamentos</h1>
-          <p className="text-gray-600">Gerencie todos os agendamentos</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Agendamentos</h1>
+          <p className="text-sm lg:text-base text-gray-600">Gerencie todos os agendamentos</p>
         </div>
         <Link href="/agendamentos/novo">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Novo Agendamento
           </Button>
         </Link>
       </div>
 
+      {/* Appointments List */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Agendamentos</CardTitle>
+          <CardTitle className="text-base lg:text-lg">Lista de Agendamentos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {agendamentos.map((agendamento) => (
               <div
                 key={agendamento.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                className="flex flex-col lg:flex-row lg:items-center justify-between p-3 lg:p-4 border rounded-lg hover:bg-gray-50 gap-3 lg:gap-0"
               >
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">
-                      {formatDateTime(agendamento.dataHora)}
-                    </span>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(agendamento.status)}`}>
+                <div className="space-y-2 flex-1">
+                  {/* Date and Status */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 lg:h-4 lg:w-4 text-gray-500" />
+                      <span className="font-medium text-sm lg:text-base">
+                        {formatDateTime(agendamento.dataHora)}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-1 text-xs rounded-full w-fit ${getStatusColor(agendamento.status)}`}>
                       {getStatusText(agendamento.status)}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  {/* Client Info */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs lg:text-sm text-gray-600">
                     <div className="flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      {agendamento.cliente.nome}
+                      <User className="h-3 w-3 lg:h-4 lg:w-4" />
+                      <span className="break-all">{agendamento.cliente.nome}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      {agendamento.cliente.telefone}
+                      <Phone className="h-3 w-3 lg:h-4 lg:w-4" />
+                      <span className="break-all">{agendamento.cliente.telefone}</span>
                     </div>
                   </div>
                   
-                  <div className="text-sm text-gray-600">
+                  {/* Service Info */}
+                  <div className="text-xs lg:text-sm text-gray-600">
                     <strong>{agendamento.servico.nome}</strong> com {agendamento.funcionario.nome}
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  {/* Duration and Price */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs lg:text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {agendamento.servico.duracao}min
+                      <Clock className="h-3 w-3 lg:h-4 lg:w-4" />
+                      <span>{agendamento.servico.duracao}min</span>
                     </div>
-                    <div>
+                    <div className="font-medium">
                       {formatPrice(agendamento.servico.preco)}
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Link href={`/agendamentos/${agendamento.id}`}>
-                    <Button variant="outline" size="sm">
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:flex-shrink-0">
+                  <Link href={`/agendamentos/${agendamento.id}`} className="flex-1 lg:flex-none">
+                    <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
                       Ver Detalhes
                     </Button>
                   </Link>
                   {agendamento.status === 'agendado' && (
-                    <Link href={`/agendamentos/${agendamento.id}/editar`}>
-                      <Button variant="outline" size="sm">
+                    <Link href={`/agendamentos/${agendamento.id}/editar`} className="flex-1 lg:flex-none">
+                      <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
                         Editar
                       </Button>
                     </Link>

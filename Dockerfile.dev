@@ -1,0 +1,35 @@
+FROM node:18-alpine
+
+# Install dependencies for native modules
+RUN apk add --no-cache libc6-compat openssl openssl-dev python3 make g++
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy package files and install dependencies
+COPY package*.json ./
+COPY prisma ./prisma
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Create necessary directories
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+EXPOSE 3000
+
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev"]

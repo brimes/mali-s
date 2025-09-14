@@ -51,7 +51,23 @@ setup: ## �️ Configuração inicial completa
 		cp prisma/data/salon.initial.db data/salon.db; \
 	fi
 	@echo "$(GREEN)🎉 Configuração concluída!$(NC)"
-	@echo "$(BLUE)🚀 Use 'make up' para iniciar a aplicação$(NC)"
+	@echo "$(BLUE)🚀 Use 'make dev-up' para desenvolvimento ou 'make up' para produção$(NC)"
+
+dev-up: ## 🚀 Inicia aplicação em modo DESENVOLVIMENTO (hot reload)
+	@echo "$(BLUE)🚀 Iniciando aplicação Mali-S em modo DESENVOLVIMENTO...$(NC)"
+	@if [ ! -d "./data" ]; then \
+		echo "$(YELLOW)📁 Criando diretório data...$(NC)"; \
+		mkdir -p ./data ./logs; \
+	fi
+	@if ! docker info > /dev/null 2>&1; then \
+		echo "$(RED)❌ Docker não está rodando. Inicie o Docker Desktop primeiro.$(NC)"; \
+		exit 1; \
+	fi
+	@docker-compose --env-file .env.dev up -d
+	@echo "$(GREEN)✅ Aplicação iniciada em modo DESENVOLVIMENTO!$(NC)"
+	@echo "$(YELLOW)🔥 Hot reload ativo - mudanças no código serão aplicadas automaticamente$(NC)"
+	@echo "$(BLUE)🌐 Acesse: http://localhost:3000$(NC)"
+	@echo "$(YELLOW)📋 Para ver logs: make logs$(NC)"
 
 up: ## 🚀 Inicia a aplicação com Docker Compose
 	@echo "$(BLUE)🚀 Iniciando aplicação Mali-S...$(NC)"
@@ -63,10 +79,19 @@ up: ## 🚀 Inicia a aplicação com Docker Compose
 		echo "$(RED)❌ Docker não está rodando. Inicie o Docker Desktop primeiro.$(NC)"; \
 		exit 1; \
 	fi
-	@docker-compose up -d
-	@echo "$(GREEN)✅ Aplicação iniciada!$(NC)"
+	@docker-compose --env-file .env.prod up -d
+	@echo "$(GREEN)✅ Aplicação iniciada em modo PRODUÇÃO!$(NC)"
 	@echo "$(BLUE)🌐 Acesse: http://localhost:3000$(NC)"
 	@echo "$(YELLOW)📋 Para ver logs: make logs$(NC)"
+
+dev-rebuild: ## 🔨 Rebuild em modo desenvolvimento
+	@echo "$(BLUE)🔨 Fazendo rebuild em modo desenvolvimento...$(NC)"
+	@docker-compose down
+	@docker-compose --env-file .env.dev build --no-cache
+	@docker-compose --env-file .env.dev up -d
+	@echo "$(GREEN)✅ Rebuild desenvolvimento concluído!$(NC)"
+	@echo "$(YELLOW)🔥 Hot reload ativo$(NC)"
+	@echo "$(BLUE)🌐 Acesse: http://localhost:3000$(NC)"
 
 down: ## 🛑 Para a aplicação
 	@echo "$(BLUE)🛑 Parando aplicação...$(NC)"

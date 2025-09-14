@@ -37,24 +37,24 @@ export function QuickActions() {
   ]
 
   return (
-    <Card>
+    <Card className="h-fit">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+          <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
           Ações Rápidas
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
         {actions.map((action, index) => (
           <Button
             key={index}
             variant="outline"
-            className="h-auto p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
+            className="h-auto p-3 lg:p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
           >
-            <action.icon className="h-6 w-6 text-gray-600" />
+            <action.icon className="h-5 w-5 lg:h-6 lg:w-6 text-gray-600" />
             <div className="text-center">
-              <div className="font-medium text-sm">{action.title}</div>
-              <div className="text-xs text-gray-500">{action.description}</div>
+              <div className="font-medium text-xs lg:text-sm">{action.title}</div>
+              <div className="text-xs text-gray-500 hidden sm:block">{action.description}</div>
             </div>
           </Button>
         ))}

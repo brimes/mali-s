@@ -56,4 +56,106 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Responsive text utilities */
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-responsive-3xl {
+    @apply text-2xl sm:text-3xl;
+  }
+}
+
+@layer components {
+  /* Responsive container spacing */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Responsive card padding */
+  .card-responsive {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+  
+  /* Mobile-first button styles */
+  .btn-mobile {
+    @apply w-full sm:w-auto text-sm lg:text-base;
+  }
+  
+  /* Responsive grid patterns */
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4;
+  }
+  
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4;
+  }
+  
+  /* Mobile sidebar overlay */
+  .sidebar-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden;
+  }
+  
+  /* Touch-friendly elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+@layer utilities {
+  /* Mobile-specific utilities */
+  .mobile-only {
+    @apply block lg:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden lg:block;
+  }
+  
+  /* Safe area handling for mobile devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Scrollable areas with proper momentum */
+  .scroll-smooth-mobile {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent zoom on input focus (iOS) */
+  .no-zoom {
+    font-size: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    .no-zoom {
+      font-size: 16px !important;
+    }
+  }
 }

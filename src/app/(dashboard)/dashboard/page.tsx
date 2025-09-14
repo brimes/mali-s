@@ -42,41 +42,46 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header Section */}
+      <div className="space-y-2">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
           {session?.user ? getUserTypeTitle(session.user.userType) : 'Dashboard'}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm lg:text-base text-gray-600">
           {session?.user ? getUserTypeDescription(session.user.userType) : 'Visão geral do salão de beleza'}
         </p>
-        {session?.user?.company && (
-          <p className="text-sm text-purple-600 mt-1">
-            📍 {session.user.company.name}
-          </p>
-        )}
-        {session?.user?.companyGroup && (
-          <p className="text-sm text-blue-600 mt-1">
-            🏢 {session.user.companyGroup.name}
-          </p>
-        )}
+        
+        {/* Company/Group Info */}
+        <div className="flex flex-col sm:flex-row gap-2 text-sm">
+          {session?.user?.company && (
+            <p className="text-purple-600">
+              📍 {session.user.company.name}
+            </p>
+          )}
+          {session?.user?.companyGroup && (
+            <p className="text-blue-600">
+              🏢 {session.user.companyGroup.name}
+            </p>
+          )}
+        </div>
       </div>
       
-      {/* Link para área administrativa */}
+      {/* Admin Panel Link - Mobile responsive */}
       {session?.user?.userType === 'ADMIN' && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-red-900 flex items-center">
-                <Shield className="mr-2 h-5 w-5" />
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-4 lg:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-base lg:text-lg font-semibold text-red-900 flex items-center">
+                <Shield className="mr-2 h-4 w-4 lg:h-5 lg:w-5" />
                 Área Administrativa
               </h3>
-              <p className="text-red-700 mt-1">
+              <p className="text-sm lg:text-base text-red-700">
                 Acesse o painel administrativo para gerenciar o sistema completo
               </p>
             </div>
             <Link href="/admin">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button className="bg-red-600 hover:bg-red-700 w-full sm:w-auto">
                 <Shield className="mr-2 h-4 w-4" />
                 Acessar Admin
               </Button>
@@ -85,9 +90,11 @@ export default function DashboardPage() {
         </div>
       )}
       
+      {/* Stats Section */}
       <DashboardStats />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Grid Section - Responsive layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
         <RecentAppointments />
         <QuickActions />
       </div>

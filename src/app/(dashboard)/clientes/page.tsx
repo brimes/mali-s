@@ -30,57 +30,61 @@ const clientes = [
 
 export default function ClientesPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
-          <p className="text-gray-600">Gerencie os clientes do salão</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Clientes</h1>
+          <p className="text-sm lg:text-base text-gray-600">Gerencie os clientes do salão</p>
         </div>
         <Link href="/clientes/novo">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Novo Cliente
           </Button>
         </Link>
       </div>
 
+      {/* Clients List */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Clientes</CardTitle>
+          <CardTitle className="text-base lg:text-lg">Lista de Clientes</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             {clientes.map((cliente) => (
               <div
                 key={cliente.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                className="flex flex-col lg:flex-row lg:items-center justify-between p-3 lg:p-4 border rounded-lg hover:bg-gray-50 gap-3 lg:gap-0"
               >
-                <div className="space-y-1">
-                  <h3 className="font-semibold text-gray-900">{cliente.nome}</h3>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="space-y-1 flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm lg:text-base">{cliente.nome}</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs lg:text-sm text-gray-600">
                     <div className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      {cliente.telefone}
+                      <Phone className="h-3 w-3 lg:h-4 lg:w-4" />
+                      <span className="break-all">{cliente.telefone}</span>
                     </div>
                     {cliente.email && (
                       <div className="flex items-center gap-1">
-                        <Mail className="h-4 w-4" />
-                        {cliente.email}
+                        <Mail className="h-3 w-3 lg:h-4 lg:w-4" />
+                        <span className="break-all">{cliente.email}</span>
                       </div>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs lg:text-sm text-gray-500">
                     {cliente.agendamentos} agendamentos
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Link href={`/clientes/${cliente.id}`}>
-                    <Button variant="outline" size="sm">
+                
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                  <Link href={`/clientes/${cliente.id}`} className="flex-1 lg:flex-none">
+                    <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
                       Ver Detalhes
                     </Button>
                   </Link>
-                  <Link href={`/clientes/${cliente.id}/editar`}>
-                    <Button variant="outline" size="sm">
+                  <Link href={`/clientes/${cliente.id}/editar`} className="flex-1 lg:flex-none">
+                    <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
                       Editar
                     </Button>
                   </Link>

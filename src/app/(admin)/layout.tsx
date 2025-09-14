@@ -1,9 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import { MobileAdminSidebar } from '@/components/admin/mobile-admin-sidebar'
+import { MobileHeader } from '@/components/mobile-header'
 import { useAuthRequired } from '@/hooks/useAuthRequired'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 export default function AdminLayout({
   children,
@@ -12,6 +14,7 @@ export default function AdminLayout({
 }) {
   const { session, isLoading } = useAuthRequired()
   const router = useRouter()
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (!isLoading && session) {
@@ -51,12 +54,32 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <AdminSidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6">
-          {children}
-        </div>
-      </main>
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
+      
+      {/* Mobile Sidebar */}
+      <MobileAdminSidebar 
+        isOpen={isMobileSidebarOpen} 
+        onClose={() => setIsMobileSidebarOpen(false)} 
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile Header */}
+        <MobileHeader 
+          onMenuClick={() => setIsMobileSidebarOpen(true)}
+          variant="admin"
+        />
+        
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto p-4 lg:p-6">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

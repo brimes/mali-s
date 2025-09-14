@@ -4,29 +4,39 @@ services:
   mali-s:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ${DOCKERFILE:-Dockerfile.dev}
     container_name: mali-s
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=file:./data/salon.db
-      - NODE_OPTIONS=--max-old-space-size=512
-      - NEXT_TELEMETRY_DISABLED=1
-      - NEXTAUTH_SECRET=mali-s-secret-key-production
-      - NEXTAUTH_URL=http://localhost:3000
+    env_file:
+      - .env
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+      # Hot reload volumes - apenas em desenvolvimento
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./prisma:/app/prisma
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tailwind.config.ts:/app/tailwind.config.ts
+      - ./next.config.js:/app/next.config.js
+      - ./postcss.config.js:/app/postcss.config.js
+      - ./middleware.ts:/app/middleware.ts
+      - /app/node_modules
+      - /app/.next
     restart: unless-stopped
-    mem_limit: 1g
-    cpus: 1.0
+    mem_limit: 2g
+    cpus: 2.0
+    stdin_open: true
+    tty: true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
 volumes:
   mali-s-data:
