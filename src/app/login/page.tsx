@@ -5,6 +5,7 @@ import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { Logo } from '@/components/ui/logo'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -60,8 +61,8 @@ export default function LoginPage() {
         <div className="bg-white rounded-xl shadow-xl p-8">
           {/* Logo e Título */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-bold text-white">M</span>
+            <div className="flex justify-center mb-4">
+              <Logo size="xl" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Mali-S</h1>
             <p className="text-gray-600">Sistema de Gestão para Salões</p>
@@ -122,6 +123,16 @@ export default function LoginPage() {
             <a href="#" className="text-sm text-purple-600 hover:text-purple-700 transition-colors">
               Esqueceu sua senha?
             </a>
+            <div className="border-t border-gray-200 pt-4 mt-4">
+              <p className="text-sm text-gray-600 mb-2">Não tem uma conta?</p>
+              <button
+                type="button"
+                onClick={() => router.push('/register')}
+                className="w-full bg-white text-purple-600 py-2 px-4 rounded-lg font-medium border border-purple-600 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all"
+              >
+                Criar conta
+              </button>
+            </div>
           </div>
         </div>
 

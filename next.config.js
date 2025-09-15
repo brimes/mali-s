@@ -1,12 +1,14 @@
 /** @type {import('next').NextConfig} */
+const isDev = process.env.NODE_ENV === 'development'
+
 const nextConfig = {
   images: {
     unoptimized: true, // Otimização para VM com poucos recursos
   },
-  output: 'standalone', // Para Docker
-  compress: true,
+  output: isDev ? undefined : 'standalone', // Standalone apenas em produção
+  compress: !isDev, // Desabilitar compressão em dev
   poweredByHeader: false,
-  generateEtags: false,
+  generateEtags: !isDev, // Desabilitar ETags em dev
   async headers() {
     return [
       {
@@ -34,13 +36,13 @@ const nextConfig = {
           },
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            value: isDev ? 'no-cache, no-store, must-revalidate' : 'no-store, no-cache, must-revalidate, proxy-revalidate',
           },
         ],
       },
     ]
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -49,6 +51,15 @@ const nextConfig = {
         tls: false,
       };
     }
+    
+    // Configurações específicas para desenvolvimento
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
+    
     return config;
   },
   env: {

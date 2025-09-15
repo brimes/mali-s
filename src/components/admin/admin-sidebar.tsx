@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Logo } from '@/components/ui/logo'
 
 const adminNavigation = [
   { name: 'Dashboard Admin', href: '/admin', icon: Shield },
@@ -51,7 +52,7 @@ export function AdminSidebar() {
     <div className="flex h-full w-64 flex-col bg-red-900 text-white">
       {/* Header */}
       <div className="flex h-16 items-center px-6 border-b border-red-800">
-        <Shield className="h-6 w-6 mr-2" />
+        <Logo size="sm" theme="dark" className="mr-2" />
         <h1 className="text-xl font-bold">Admin Mali-S</h1>
       </div>
       

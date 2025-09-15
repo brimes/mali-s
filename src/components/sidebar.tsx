@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Logo } from '@/components/ui/logo'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -91,7 +92,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
       <div className="flex h-16 items-center px-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">Mali-S</h1>
+        <Logo size="md" showText text="Mali-S" />
       </div>
       
       <nav className="flex-1 space-y-1 px-3 py-4">
