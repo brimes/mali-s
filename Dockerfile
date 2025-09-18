@@ -30,18 +30,33 @@ RUN apk add --no-cache openssl openssl-dev libc6-compat
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy package.json to install dependencies including Prisma
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+
+# Install ALL dependencies (including Prisma CLI) for production
+# This ensures prisma command is available
+RUN npm ci && npm cache clean --force
+
 # Copy built application
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+# Copy Prisma client with correct ownership
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Generate Prisma client in production stage with correct ownership
+RUN npx prisma generate && chown -R nextjs:nodejs /app/node_modules/.prisma
 
 # Copy entrypoint script
 COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
-# Create data directory for SQLite and copy initial database
+# Make entrypoint executable
+RUN chmod +x ./docker-entrypoint.sh
+
+# Create data directory for SQLite
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 USER nextjs
@@ -50,6 +65,7 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
 
 # Use entrypoint script
 ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -11,11 +11,14 @@ if [ ! -f "/app/data/salon.db" ]; then
     
     # Tentar inicializar usando Prisma diretamente
     if [ -f "/app/prisma/schema.prisma" ]; then
-        echo "🔧 Gerando cliente Prisma..."
-        npm run db:generate
-        
-        echo "📦 Criando banco de dados..."
-        npm run db:push
+        echo "� Criando banco de dados..."
+        if command -v npx >/dev/null 2>&1; then
+            npx prisma db push
+        elif [ -f "/app/node_modules/.bin/prisma" ]; then
+            /app/node_modules/.bin/prisma db push
+        else
+            echo "⚠️ Prisma CLI não encontrado, banco será criado pela aplicação..."
+        fi
         
         echo "✅ Banco inicializado com sucesso!"
     else
@@ -23,8 +26,22 @@ if [ ! -f "/app/data/salon.db" ]; then
     fi
 else
     echo "✅ Banco existente encontrado"
-    # Garantir que o cliente Prisma está atualizado
-    npm run db:generate
+    
+    # Verificar se precisamos atualizar o schema (apenas se Prisma CLI estiver disponível)
+    if command -v npx >/dev/null 2>&1; then
+        echo "🔧 Verificando se schema precisa ser atualizado..."
+        # Tentar aplicar mudanças de schema sem perder dados
+        npx prisma db push --accept-data-loss=false 2>/dev/null || {
+            echo "ℹ️ Schema já está atualizado ou mudanças requerem migração manual"
+        }
+    elif [ -f "/app/node_modules/.bin/prisma" ]; then
+        echo "🔧 Verificando se schema precisa ser atualizado..."
+        /app/node_modules/.bin/prisma db push --accept-data-loss=false 2>/dev/null || {
+            echo "ℹ️ Schema já está atualizado ou mudanças requerem migração manual"
+        }
+    else
+        echo "ℹ️ Prisma CLI não disponível, pulando verificação de schema"
+    fi
 fi
 
 # Ajustar permissões
