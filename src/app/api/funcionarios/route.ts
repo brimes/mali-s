@@ -6,7 +6,31 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    }
+
+    // Obter o companyId do usuário
+    let companyId = session.user.companyId
+
+    // Admins/Gerentes de grupo obtêm acesso de fallback à empresa
+    if (!companyId && (session.user.userType === 'ADMIN' || session.user.userType === 'COMPANY_GROUP')) {
+      const firstCompany = await prisma.company.findFirst({
+        where: session.user.userType === 'COMPANY_GROUP' 
+          ? { companyGroupId: session.user.companyGroupId }
+          : undefined
+      })
+      companyId = firstCompany?.id
+    }
+
+    if (!companyId) {
+      return NextResponse.json({ error: 'Empresa não encontrada' }, { status: 404 })
+    }
+
     const funcionarios = await prisma.funcionario.findMany({
+      where: { companyId },
       include: {
         agendamentos: true
       },

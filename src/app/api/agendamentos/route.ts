@@ -6,11 +6,38 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Acesso negado' },
+        { status: 401 }
+      )
+    }
+
+    // Obter companyId do usuário logado
+    let companyId = session.user.companyId
+    
+    // Se for admin ou gerente de rede, usar a primeira empresa encontrada
+    if (!companyId && (session.user.userType === 'ADMIN' || session.user.userType === 'COMPANY_GROUP')) {
+      const firstCompany = await prisma.company.findFirst()
+      companyId = firstCompany?.id
+    }
+
+    if (!companyId) {
+      return NextResponse.json(
+        { error: 'Empresa não encontrada' },
+        { status: 400 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const data = searchParams.get('data')
     const funcionarioId = searchParams.get('funcionarioId')
 
-    let whereClause = {}
+    let whereClause: any = {
+      companyId: companyId
+    }
 
     if (data) {
       const startDate = new Date(data)
@@ -36,9 +63,27 @@ export async function GET(request: NextRequest) {
     const agendamentos = await prisma.agendamento.findMany({
       where: whereClause,
       include: {
-        cliente: true,
-        funcionario: true,
-        servico: true
+        cliente: {
+          select: {
+            id: true,
+            nome: true,
+            telefone: true
+          }
+        },
+        funcionario: {
+          select: {
+            id: true,
+            nome: true
+          }
+        },
+        servico: {
+          select: {
+            id: true,
+            nome: true,
+            duracao: true,
+            preco: true
+          }
+        }
       },
       orderBy: {
         dataHora: 'asc'
@@ -83,7 +128,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const validatedData = agendamentoSchema.parse(body)
+    
+    // Converter dataHora string para Date object antes da validação
+    const dataForValidation = {
+      ...body,
+      dataHora: new Date(body.dataHora)
+    }
+    
+    const validatedData = agendamentoSchema.parse(dataForValidation)
 
     // Verificar disponibilidade do funcionário
     const conflito = await prisma.agendamento.findFirst({

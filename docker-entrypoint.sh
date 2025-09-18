@@ -12,10 +12,10 @@ if [ ! -f "/app/data/salon.db" ]; then
     # Tentar inicializar usando Prisma diretamente
     if [ -f "/app/prisma/schema.prisma" ]; then
         echo "🔧 Gerando cliente Prisma..."
-        npx prisma generate
+        npm run db:generate
         
         echo "📦 Criando banco de dados..."
-        npx prisma db push --force-reset
+        npm run db:push
         
         echo "✅ Banco inicializado com sucesso!"
     else
@@ -24,7 +24,7 @@ if [ ! -f "/app/data/salon.db" ]; then
 else
     echo "✅ Banco existente encontrado"
     # Garantir que o cliente Prisma está atualizado
-    npx prisma generate
+    npm run db:generate
 fi
 
 # Ajustar permissões

@@ -1,18 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
-export default function NovoClientePage() {
+interface Cliente {
+  id: string
+  nome: string
+  telefone: string
+  email: string | null
+  observacoes: string | null
+}
+
+interface ClienteEditarProps {
+  params: {
+    id: string
+  }
+}
+
+export default function ClienteEditarPage({ params }: ClienteEditarProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -21,11 +38,33 @@ export default function NovoClientePage() {
   })
   const [errors, setErrors] = useState<{[key: string]: string}>({})
 
+  useEffect(() => {
+    fetchCliente()
+  }, [params.id])
+
+  const fetchCliente = async () => {
+    try {
+      const response = await fetch(`/api/clientes/${params.id}`)
+      if (!response.ok) {
+        throw new Error('Cliente não encontrado')
+      }
+      const cliente: Cliente = await response.json()
+      setFormData({
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        email: cliente.email || '',
+        observacoes: cliente.observacoes || ''
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const formatPhone = (value: string) => {
-    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, '')
     
-    // Aplica a máscara
     if (numbers.length <= 10) {
       return numbers.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
     } else {
@@ -66,17 +105,16 @@ export default function NovoClientePage() {
       return
     }
     
-    setLoading(true)
+    setSaving(true)
 
     try {
-      // Preparar dados para envio (limpar máscara do telefone)
       const dataToSend = {
         ...formData,
         telefone: formData.telefone.replace(/\D/g, '')
       }
 
-      const response = await fetch('/api/clientes', {
-        method: 'POST',
+      const response = await fetch(`/api/clientes/${params.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -84,15 +122,40 @@ export default function NovoClientePage() {
       })
 
       if (response.ok) {
+        router.push(`/clientes/${params.id}`)
+      } else {
+        const error = await response.json()
+        alert('Erro ao atualizar cliente: ' + error.error)
+      }
+    } catch (error) {
+      alert('Erro ao atualizar cliente')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.')) {
+      return
+    }
+
+    setDeleting(true)
+
+    try {
+      const response = await fetch(`/api/clientes/${params.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
         router.push('/clientes')
       } else {
         const error = await response.json()
-        alert('Erro ao cadastrar cliente: ' + error.error)
+        alert('Erro ao excluir cliente: ' + error.error)
       }
     } catch (error) {
-      alert('Erro ao cadastrar cliente')
+      alert('Erro ao excluir cliente')
     } finally {
-      setLoading(false)
+      setDeleting(false)
     }
   }
 
@@ -112,7 +175,6 @@ export default function NovoClientePage() {
       })
     }
     
-    // Limpar erro do campo quando o usuário começar a digitar
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -121,19 +183,47 @@ export default function NovoClientePage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <Link href="/clientes">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </Link>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center text-red-600">
+              {error}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 lg:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <Link href="/clientes">
+        <Link href={`/clientes/${params.id}`}>
           <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Novo Cliente</h1>
-          <p className="text-sm lg:text-base text-gray-600">Cadastre um novo cliente</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Editar Cliente</h1>
+          <p className="text-sm lg:text-base text-gray-600">Atualize as informações do cliente</p>
         </div>
       </div>
 
@@ -215,17 +305,31 @@ export default function NovoClientePage() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
               <Button 
                 type="submit" 
-                disabled={loading} 
+                disabled={saving} 
                 className="w-full sm:w-auto text-sm lg:text-base"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {loading ? 'Salvando...' : 'Salvar Cliente'}
+                {saving ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
-              <Link href="/clientes" className="w-full sm:w-auto">
+              
+              <Link href={`/clientes/${params.id}`} className="w-full sm:w-auto">
                 <Button type="button" variant="outline" className="w-full text-sm lg:text-base">
                   Cancelar
                 </Button>
               </Link>
+
+              <div className="flex-1"></div>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full sm:w-auto text-sm lg:text-base"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {deleting ? 'Excluindo...' : 'Excluir Cliente'}
+              </Button>
             </div>
           </form>
         </CardContent>

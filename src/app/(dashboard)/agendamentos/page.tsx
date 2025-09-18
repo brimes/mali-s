@@ -1,116 +1,134 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Calendar, Clock, User, Phone } from 'lucide-react'
-import Link from 'next/link'
+'use client'
 
-// Mock data - Em produção, buscar do banco de dados
-const agendamentos = [
-  {
-    id: '1',
-    dataHora: new Date(2024, 10, 15, 14, 0),
-    cliente: {
-      id: '1',
-      nome: 'Maria Silva',
-      telefone: '(11) 99999-9999'
-    },
-    funcionario: {
-      id: '1',
-      nome: 'Ana Costa'
-    },
-    servico: {
-      id: '1',
-      nome: 'Corte Feminino',
-      duracao: 60,
-      preco: 45.00
-    },
-    status: 'agendado',
-    observacoes: ''
-  },
-  {
-    id: '2',
-    dataHora: new Date(2024, 10, 15, 15, 30),
-    cliente: {
-      id: '2',
-      nome: 'João Santos',
-      telefone: '(11) 88888-8888'
-    },
-    funcionario: {
-      id: '2',
-      nome: 'Carla Lima'
-    },
-    servico: {
-      id: '5',
-      nome: 'Manicure',
-      duracao: 45,
-      preco: 20.00
-    },
-    status: 'agendado',
-    observacoes: ''
-  },
-  {
-    id: '3',
-    dataHora: new Date(2024, 10, 14, 16, 0),
-    cliente: {
-      id: '3',
-      nome: 'Ana Paula',
-      telefone: '(11) 77777-7777'
-    },
-    funcionario: {
-      id: '3',
-      nome: 'Fernanda Rocha'
-    },
-    servico: {
-      id: '7',
-      nome: 'Design de Sobrancelha',
-      duracao: 30,
-      preco: 15.00
-    },
-    status: 'concluido',
-    observacoes: ''
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Plus, List, Calendar, CalendarDays, CalendarRange } from 'lucide-react'
+import Link from 'next/link'
+import { 
+  AgendamentosLista, 
+  CalendarioDia, 
+  CalendarioSemana, 
+  CalendarioMes 
+} from '@/components/agendamentos'
+import { ViewType } from '@/types/agendamentos'
+
+// Interface para agendamento da API
+interface AgendamentoAPI {
+  id: string
+  dataHora: string
+  status: string
+  observacoes?: string
+  preco?: number
+  cliente: {
+    id: string
+    nome: string
+    telefone: string
   }
-]
+  funcionario: {
+    id: string
+    nome: string
+  }
+  servico: {
+    id: string
+    nome: string
+    duracao: number
+    preco: number
+  }
+}
 
 export default function AgendamentosPage() {
-  const formatDateTime = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date)
-  }
+  const [viewType, setViewType] = useState<ViewType>('dia')
+  const [dataSelecionada, setDataSelecionada] = useState(new Date())
+  const [agendamentos, setAgendamentos] = useState<AgendamentoAPI[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price)
-  }
+  useEffect(() => {
+    loadAgendamentos()
+    
+    // Recarregar agendamentos quando voltar da página de criação
+    const handleFocus = () => {
+      loadAgendamentos()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'agendado':
-        return 'bg-blue-100 text-blue-800'
-      case 'concluido':
-        return 'bg-green-100 text-green-800'
-      case 'cancelado':
-        return 'bg-red-100 text-red-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+  const loadAgendamentos = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/agendamentos')
+      if (response.ok) {
+        const data = await response.json()
+        setAgendamentos(data)
+      } else {
+        console.error('Erro ao carregar agendamentos')
+      }
+    } catch (error) {
+      console.error('Erro ao carregar agendamentos:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'agendado':
-        return 'Agendado'
-      case 'concluido':
-        return 'Concluído'
-      case 'cancelado':
-        return 'Cancelado'
+  // Converter agendamentos da API para o formato esperado pelos componentes
+  const agendamentosConvertidos = agendamentos.map(agendamento => ({
+    ...agendamento,
+    dataHora: new Date(agendamento.dataHora)
+  }))
+
+  const handleDiaClick = (data: Date) => {
+    setDataSelecionada(data)
+    setViewType('dia')
+  }
+
+  const views = [
+    { id: 'dia', label: 'Dia', icon: Calendar },
+    { id: 'semana', label: 'Semana', icon: CalendarDays },
+    { id: 'mes', label: 'Mês', icon: CalendarRange },
+    { id: 'lista', label: 'Lista', icon: List },
+  ]
+
+  const renderView = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <p>Carregando agendamentos...</p>
+        </div>
+      )
+    }
+
+    switch (viewType) {
+      case 'lista':
+        return <AgendamentosLista agendamentos={agendamentosConvertidos} />
+      case 'dia':
+        return (
+          <CalendarioDia
+            agendamentos={agendamentosConvertidos}
+            dataSelecionada={dataSelecionada}
+            onDataChange={setDataSelecionada}
+          />
+        )
+      case 'semana':
+        return (
+          <CalendarioSemana
+            agendamentos={agendamentosConvertidos}
+            dataSelecionada={dataSelecionada}
+            onDataChange={setDataSelecionada}
+            onDiaClick={handleDiaClick}
+          />
+        )
+      case 'mes':
+        return (
+          <CalendarioMes
+            agendamentos={agendamentosConvertidos}
+            dataSelecionada={dataSelecionada}
+            onDataChange={setDataSelecionada}
+            onDiaClick={handleDiaClick}
+          />
+        )
       default:
-        return status
+        return <AgendamentosLista agendamentos={agendamentosConvertidos} />
     }
   }
 
@@ -130,81 +148,28 @@ export default function AgendamentosPage() {
         </Link>
       </div>
 
-      {/* Appointments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base lg:text-lg">Lista de Agendamentos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 lg:space-y-4">
-            {agendamentos.map((agendamento) => (
-              <div
-                key={agendamento.id}
-                className="flex flex-col lg:flex-row lg:items-center justify-between p-3 lg:p-4 border rounded-lg hover:bg-gray-50 gap-3 lg:gap-0"
-              >
-                <div className="space-y-2 flex-1">
-                  {/* Date and Status */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3 lg:h-4 lg:w-4 text-gray-500" />
-                      <span className="font-medium text-sm lg:text-base">
-                        {formatDateTime(agendamento.dataHora)}
-                      </span>
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded-full w-fit ${getStatusColor(agendamento.status)}`}>
-                      {getStatusText(agendamento.status)}
-                    </span>
-                  </div>
-                  
-                  {/* Client Info */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs lg:text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3 lg:h-4 lg:w-4" />
-                      <span className="break-all">{agendamento.cliente.nome}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Phone className="h-3 w-3 lg:h-4 lg:w-4" />
-                      <span className="break-all">{agendamento.cliente.telefone}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Service Info */}
-                  <div className="text-xs lg:text-sm text-gray-600">
-                    <strong>{agendamento.servico.nome}</strong> com {agendamento.funcionario.nome}
-                  </div>
-                  
-                  {/* Duration and Price */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs lg:text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 lg:h-4 lg:w-4" />
-                      <span>{agendamento.servico.duracao}min</span>
-                    </div>
-                    <div className="font-medium">
-                      {formatPrice(agendamento.servico.preco)}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:flex-shrink-0">
-                  <Link href={`/agendamentos/${agendamento.id}`} className="flex-1 lg:flex-none">
-                    <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
-                      Ver Detalhes
-                    </Button>
-                  </Link>
-                  {agendamento.status === 'agendado' && (
-                    <Link href={`/agendamentos/${agendamento.id}/editar`} className="flex-1 lg:flex-none">
-                      <Button variant="outline" size="sm" className="w-full lg:w-auto text-xs lg:text-sm">
-                        Editar
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* View Navigation */}
+      <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-lg w-fit">
+        {views.map(({ id, label, icon: Icon }) => (
+          <Button
+            key={id}
+            variant={viewType === id ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewType(id as ViewType)}
+            className={`flex items-center gap-2 ${
+              viewType === id 
+                ? 'bg-white shadow-sm text-gray-900 hover:bg-white hover:text-gray-900' 
+                : 'hover:bg-white/50 text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            <span className="hidden sm:inline">{label}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* View Content */}
+      {renderView()}
     </div>
   )
 }

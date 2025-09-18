@@ -36,7 +36,6 @@ const navigation = [
   { name: 'Clientes', href: '/clientes', icon: Users },
   { name: 'Funcionários', href: '/funcionarios', icon: UserPlus },
   { name: 'Serviços', href: '/servicos', icon: Scissors },
-  { name: 'Calendário', href: '/calendario', icon: BarChart3 },
 ]
 
 // Navegação adicional para admins

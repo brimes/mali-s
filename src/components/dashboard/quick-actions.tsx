@@ -3,15 +3,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, Calendar, Users, UserPlus, Scissors } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export function QuickActions() {
+  const router = useRouter()
+
   const actions = [
     {
       title: 'Novo Agendamento',
       description: 'Criar um novo agendamento',
       icon: Calendar,
       color: 'bg-blue-500 hover:bg-blue-600',
-      href: '/agendamentos/novo'
+      href: '/agendamentos'
     },
     {
       title: 'Novo Cliente',
@@ -25,16 +28,20 @@ export function QuickActions() {
       description: 'Cadastrar funcionário',
       icon: UserPlus,
       color: 'bg-purple-500 hover:bg-purple-600',
-      href: '/funcionarios/novo'
+      href: '/funcionarios'
     },
     {
       title: 'Novo Serviço',
       description: 'Cadastrar novo serviço',
       icon: Scissors,
       color: 'bg-orange-500 hover:bg-orange-600',
-      href: '/servicos/novo'
+      href: '/servicos'
     }
   ]
+
+  const handleActionClick = (href: string) => {
+    router.push(href)
+  }
 
   return (
     <Card className="h-fit">
@@ -49,6 +56,7 @@ export function QuickActions() {
           <Button
             key={index}
             variant="outline"
+            onClick={() => handleActionClick(action.href)}
             className="h-auto p-3 lg:p-4 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
           >
             <action.icon className="h-5 w-5 lg:h-6 lg:w-6 text-gray-600" />
