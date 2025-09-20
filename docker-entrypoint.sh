@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Inicialização do container
+# Inicialização do container com migrações otimizadas
 set -e
 
 echo "🚀 Iniciando container Mali-S..."
@@ -9,35 +9,29 @@ echo "🚀 Iniciando container Mali-S..."
 if [ ! -f "/app/data/salon.db" ]; then
     echo "📋 Banco não encontrado, inicializando..."
     
-    # Tentar inicializar usando Prisma diretamente
+    # Tentar criar banco usando Prisma
     if [ -f "/app/prisma/schema.prisma" ]; then
         echo "📦 Criando banco de dados..."
-        if command -v npx >/dev/null 2>&1; then
-            npx prisma db push
-        elif [ -f "/app/node_modules/.bin/prisma" ]; then
-            /app/node_modules/.bin/prisma db push
+        if [ -f "/app/node_modules/.bin/prisma" ]; then
+            /app/node_modules/.bin/prisma db push --skip-generate 2>/dev/null && echo "✅ Banco criado com sucesso!" || {
+                echo "⚠️ Erro ao criar banco, será criado pela aplicação..."
+            }
         else
             echo "⚠️ Prisma CLI não encontrado, banco será criado pela aplicação..."
         fi
-        
-        echo "✅ Banco inicializado com sucesso!"
     else
         echo "⚠️ Schema Prisma não encontrado"
     fi
 else
     echo "✅ Banco existente encontrado"
     
-    # Verificar se precisamos atualizar o schema (apenas se Prisma CLI estiver disponível)
-    if command -v npx >/dev/null 2>&1; then
+    # Aplicar migrações se disponível
+    if [ -f "/app/node_modules/.bin/prisma" ] && [ -f "/app/prisma/schema.prisma" ]; then
         echo "🔧 Verificando se schema precisa ser atualizado..."
-        # Tentar aplicar mudanças de schema sem perder dados
-        npx prisma db push --accept-data-loss=false 2>/dev/null || {
-            echo "ℹ️ Schema já está atualizado ou mudanças requerem migração manual"
-        }
-    elif [ -f "/app/node_modules/.bin/prisma" ]; then
-        echo "🔧 Verificando se schema precisa ser atualizado..."
-        /app/node_modules/.bin/prisma db push --accept-data-loss=false 2>/dev/null || {
-            echo "ℹ️ Schema já está atualizado ou mudanças requerem migração manual"
+        /app/node_modules/.bin/prisma db push --skip-generate --accept-data-loss=false 2>/dev/null && {
+            echo "✅ Schema atualizado com sucesso!"
+        } || {
+            echo "ℹ️ Schema já está atualizado ou sem mudanças compatíveis"
         }
     else
         echo "ℹ️ Prisma CLI não disponível, pulando verificação de schema"

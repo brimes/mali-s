@@ -60,6 +60,9 @@ INSTRUCOES.md
 STATUS.md
 TESTE_AUTH.md
 CORRECAO_ADMIN.md
+CHANGELOG*.md
+RESPONSIVIDADE.md
+RESOLUCAO_BANCO_PRD.md
 *.md
 
 # Docker
@@ -71,6 +74,7 @@ docker-compose*.yml
 deploy.sh
 ecosystem.config.js
 nginx.conf
+Makefile*
 
 # Testing
 .nyc_output
@@ -79,9 +83,16 @@ coverage/
 # TypeScript
 *.tsbuildinfo
 
-# Prisma (keep schema but exclude generated files)
+# Prisma - exclude large database files
 prisma/migrations/
 prisma/data/salon.db
 prisma/data/salon.db-journal
 # Manter banco inicial para Docker
 !prisma/data/salon.initial.db
+
+# Development files
+.playwright-mcp/
+scripts/
+backups/
+data/
+logs/

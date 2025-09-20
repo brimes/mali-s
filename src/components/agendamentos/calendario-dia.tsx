@@ -1,8 +1,9 @@
 'use client'
 
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { CalendarioProps } from '@/types/agendamentos'
 import { useState, useEffect, useRef } from 'react'
@@ -75,6 +76,8 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
     ativo: false
   })
   const [isDragging, setIsDragging] = useState(false)
+  const [agendamentoParaExcluir, setAgendamentoParaExcluir] = useState<string | null>(null)
+  const [excluindoAgendamento, setExcluindoAgendamento] = useState(false)
 
   // Carregar dados quando data ou página mudarem
   useEffect(() => {
@@ -232,6 +235,40 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
     setIsDragging(false)
   }
 
+  // Função para excluir agendamento
+  const confirmarExclusao = (agendamentoId: string) => {
+    setAgendamentoParaExcluir(agendamentoId)
+  }
+
+  const cancelarExclusao = () => {
+    setAgendamentoParaExcluir(null)
+  }
+
+  const excluirAgendamento = async () => {
+    if (!agendamentoParaExcluir) return
+    
+    setExcluindoAgendamento(true)
+    try {
+      const response = await fetch(`/api/agendamentos/${agendamentoParaExcluir}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        // Recarregar dados do dia após exclusão
+        await carregarDadosDia()
+        setAgendamentoParaExcluir(null)
+      } else {
+        console.error('Erro ao excluir agendamento')
+        // Aqui você pode adicionar uma notificação de erro
+      }
+    } catch (error) {
+      console.error('Erro ao excluir agendamento:', error)
+      // Aqui você pode adicionar uma notificação de erro
+    } finally {
+      setExcluindoAgendamento(false)
+    }
+  }
+
   // Verificar se um horário está dentro da seleção
   const estaNoIntervaloSelecionado = (funcionarioId: string, horario: string): boolean => {
     if (!selecao.ativo || selecao.funcionarioId !== funcionarioId) return false
@@ -299,6 +336,14 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
   // Função para calcular quantos slots de 30min um agendamento ocupa
   const calcularSlotsOcupados = (agendamento: AgendamentoDia) => {
     return Math.ceil(agendamento.servico.duracao / 30)
+  }
+
+  // Função para calcular altura total considerando gaps
+  const calcularAlturaTotal = (agendamento: AgendamentoDia) => {
+    const slots = calcularSlotsOcupados(agendamento)
+    // 40px por slot + gap entre slots (experimentando com valores maiores)
+    const gapPorSlot = 4 // Aumentando para 4px entre slots
+    return slots * 40 + (slots - 1) * gapPorSlot
   }
 
   // Função para verificar se um horário está ocupado por algum agendamento (mas não necessariamente iniciando)
@@ -446,7 +491,7 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
 
               {/* Grid de horários */}
               {horarios.map((horario) => (
-                <>
+                <React.Fragment key={`row-${horario}`}>
                   <div key={`time-${horario}`} className="text-xs text-gray-500 font-medium py-1.5 sticky left-0 bg-white border-r">
                     {horario}
                   </div>
@@ -456,39 +501,61 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
                     const estaSelecionado = estaNoIntervaloSelecionado(funcionario.id, horario)
                     
                     return (
-                      <div key={`${funcionario.id}-${horario}`} className="min-h-[40px] border-b border-gray-100 p-0.5 relative">
+                      <div key={`${funcionario.id}-${horario}`} className="min-h-[40px] border-b border-gray-100 relative overflow-visible" style={{ padding: agendamentoIniciando ? '0' : '2px' }}>
                         {agendamentoIniciando ? (
                           <div 
-                            className={`p-1.5 rounded border text-xs ${getStatusColor(agendamentoIniciando.status)} absolute top-0.5 left-0.5 right-0.5 z-10`}
+                            className={`p-1.5 rounded border text-xs ${getStatusColor(agendamentoIniciando.status)} absolute z-30`}
                             style={{
-                              height: `${calcularSlotsOcupados(agendamentoIniciando) * 40 - 4}px`
+                              top: '2px',
+                              left: '2px',
+                              right: '2px',
+                              height: `${calcularAlturaTotal(agendamentoIniciando)}px`,
+                              minHeight: `${calcularAlturaTotal(agendamentoIniciando)}px`,
+                              maxHeight: 'none'
                             }}
                           >
                             <div className="flex justify-between items-start h-full">
                               <div className="flex-1">
-                                <div className="font-medium text-xs leading-tight">
-                                  {agendamentoIniciando.cliente.nome}
-                                </div>
-                                <div className="text-xs text-gray-600 mt-0.5 leading-tight">
-                                  {agendamentoIniciando.servico.nome}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-0.5">
-                                  {agendamentoIniciando.servico.duracao}min
-                                </div>
+                                {calcularSlotsOcupados(agendamentoIniciando) === 1 ? (
+                                  // Layout compacto para agendamentos de 1 slot (30 min)
+                                  <div className="font-medium text-xs leading-tight">
+                                    {agendamentoIniciando.cliente.nome} - <span className="text-gray-600">{agendamentoIniciando.servico.nome}</span>
+                                  </div>
+                                ) : (
+                                  // Layout normal para agendamentos maiores
+                                  <>
+                                    <div className="font-medium text-xs leading-tight">
+                                      {agendamentoIniciando.cliente.nome}
+                                    </div>
+                                    <div className="text-xs text-gray-600 mt-0.5 leading-tight">
+                                      {agendamentoIniciando.servico.nome}
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                              <Link href={`/agendamentos/${agendamentoIniciando.id}`}>
-                                <Button variant="ghost" size="sm" className="h-5 px-1 text-xs">
-                                  Ver
+                              <div className="flex gap-1">
+                                <Link href={`/agendamentos/${agendamentoIniciando.id}`}>
+                                  <Button variant="ghost" size="sm" className="h-5 px-1 text-xs">
+                                    Ver
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-5 px-1 text-xs text-red-600 hover:text-red-800 hover:bg-red-50"
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    confirmarExclusao(agendamentoIniciando.id)
+                                  }}
+                                  disabled={excluindoAgendamento}
+                                >
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
-                              </Link>
+                              </div>
                             </div>
                           </div>
-                        ) : agendamentoOcupando ? (
-                          // Slot ocupado por agendamento que começou antes
-                          <div className="h-full min-h-[36px] bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
-                            <span className="text-xs text-gray-500">Ocupado</span>
-                          </div>
-                        ) : (
+                        ) : !agendamentoOcupando ? (
+                          // Apenas mostrar seleção se não há agendamento ocupando
                           <div 
                             className={`h-full min-h-[36px] border rounded cursor-pointer flex items-center justify-center select-none transition-colors ${
                               estaSelecionado 
@@ -509,16 +576,47 @@ export function CalendarioDia({ dataSelecionada, onDataChange }: CalendarioDiaPr
                               {estaSelecionado ? '✓' : 'Livre'}
                             </span>
                           </div>
-                        )}
+                        ) : null}
+                        {/* Se agendamentoOcupando && !agendamentoIniciando, não renderizar nada - deixar o bloco principal cobrir */}
                       </div>
                     )
                   })}
-                </>
+                </React.Fragment>
               ))}
             </div>
           </div>
         )}
       </CardContent>
+
+      {/* Modal de confirmação de exclusão */}
+      {agendamentoParaExcluir && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-mx mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Confirmar Exclusão
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={cancelarExclusao}
+                disabled={excluindoAgendamento}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={excluirAgendamento}
+                disabled={excluindoAgendamento}
+              >
+                {excluindoAgendamento ? 'Excluindo...' : 'Excluir'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

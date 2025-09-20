@@ -6,7 +6,7 @@ REGISTRY := ghcr.io
 REPOSITORY := brimes/mali-s
 IMAGE_NAME := $(REGISTRY)/$(REPOSITORY)
 TAG ?= latest
-PLATFORMS := linux/amd64,linux/arm64
+PLATFORMS := linux/arm64
 
 # Cores para output
 RED := \033[0;31m
@@ -179,22 +179,14 @@ login: ## 🔐 Faz login no GHCR
 	@echo "$(BLUE)🔐 Fazendo login no GHCR...$(NC)"
 	@docker login ghcr.io
 
-deploy: ## 🚀 Build e push completo para GHCR (produção)
-	@echo "$(BLUE)🚀 Iniciando deploy completo para GHCR...$(NC)"
+deploy: ## 🚀 Deploy para GHCR
+	@echo "$(BLUE)🚀 Deploy para GHCR...$(NC)"
 	@echo "$(YELLOW)Imagem: $(IMAGE_NAME):$(TAG)$(NC)"
-	@echo "$(BLUE)🔐 Fazendo login no GHCR...$(NC)"
 	@docker login ghcr.io
-	@echo "$(BLUE)🏗️  Construindo imagem Docker para produção...$(NC)"
-	@docker buildx create --name mali-s-builder --use --bootstrap 2>/dev/null || true
-	@docker buildx build \
-		--file Dockerfile \
-		--platform $(PLATFORMS) \
-		--tag "$(IMAGE_NAME):$(TAG)" \
-		--tag "$(IMAGE_NAME):latest" \
-		--push \
-		.
-	@echo "$(GREEN)✅ Deploy concluído com sucesso!$(NC)"
-	@echo "$(BLUE)� Disponível em: https://github.com/brimes/mali-s/packages$(NC)"
+	@echo "$(BLUE)🏗️  Build e push...$(NC)"
+	@docker build --tag "$(IMAGE_NAME):$(TAG)" . && docker push "$(IMAGE_NAME):$(TAG)"
+	@echo "$(GREEN)✅ Deploy concluído!$(NC)"
+	@echo "$(BLUE)📍 Disponível em: https://github.com/brimes/mali-s/packages$(NC)"
 
 deploy-quick: ## ⚡ Build e push rápido (apenas arquitetura local)
 	@echo "$(BLUE)⚡ Deploy rápido para GHCR...$(NC)"
@@ -211,6 +203,13 @@ deploy-quick: ## ⚡ Build e push rápido (apenas arquitetura local)
 	fi
 	@echo "$(GREEN)✅ Deploy rápido concluído!$(NC)"
 	@echo "$(BLUE)📍 Disponível em: https://github.com/brimes/mali-s/packages$(NC)"
+
+deploy-fast: ## 🚀 Deploy ultra-rápido (build+push em uma linha)
+	@echo "$(BLUE)🚀 Deploy ultra-rápido para GHCR...$(NC)"
+	@echo "$(YELLOW)Imagem: $(IMAGE_NAME):$(TAG)$(NC)"
+	@docker login ghcr.io
+	@docker build --tag "$(IMAGE_NAME):$(TAG)" . && docker push "$(IMAGE_NAME):$(TAG)"
+	@echo "$(GREEN)✅ Deploy ultra-rápido concluído!$(NC)"
 
 build: setup-buildx ## Constrói imagem multi-plataforma
 	@echo "$(BLUE)🏗️  Construindo imagem Docker multi-plataforma...$(NC)"
