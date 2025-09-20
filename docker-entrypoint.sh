@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Script de inicialização do container
+# Inicialização do container
 set -e
 
 echo "🚀 Iniciando container Mali-S..."
@@ -11,7 +11,7 @@ if [ ! -f "/app/data/salon.db" ]; then
     
     # Tentar inicializar usando Prisma diretamente
     if [ -f "/app/prisma/schema.prisma" ]; then
-        echo "� Criando banco de dados..."
+        echo "📦 Criando banco de dados..."
         if command -v npx >/dev/null 2>&1; then
             npx prisma db push
         elif [ -f "/app/node_modules/.bin/prisma" ]; then

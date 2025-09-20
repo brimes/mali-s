@@ -38,7 +38,12 @@ interface AgendamentoAPI {
 
 export default function AgendamentosPage() {
   const [viewType, setViewType] = useState<ViewType>('dia')
-  const [dataSelecionada, setDataSelecionada] = useState(new Date())
+  // Usar timezone local do Brasil para determinar a data atual
+  const [dataSelecionada, setDataSelecionada] = useState(() => {
+    const agora = new Date()
+    // Criar data local sem interferência de UTC
+    return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+  })
   const [agendamentos, setAgendamentos] = useState<AgendamentoAPI[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -104,7 +109,6 @@ export default function AgendamentosPage() {
       case 'dia':
         return (
           <CalendarioDia
-            agendamentos={agendamentosConvertidos}
             dataSelecionada={dataSelecionada}
             onDataChange={setDataSelecionada}
           />

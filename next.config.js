@@ -10,36 +10,63 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: !isDev, // Desabilitar ETags em dev
   async headers() {
+    const baseHeaders = [
+      {
+        key: 'X-Frame-Options',
+        value: 'DENY',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'X-XSS-Protection',
+        value: '1; mode=block',
+      },
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=31536000; includeSubDomains',
+      },
+    ]
+
+    // Adicionar Cache-Control apenas em produção
+    if (!isDev) {
+      baseHeaders.push({
+        key: 'Cache-Control',
+        value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      })
+    }
+
     return [
       {
         source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
-          },
-          {
-            key: 'Cache-Control',
-            value: isDev ? 'no-cache, no-store, must-revalidate' : 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          },
-        ],
+        headers: baseHeaders,
       },
+      // Headers específicos para assets estáticos em produção
+      ...(isDev ? [] : [
+        {
+          source: '/_next/static/(.*)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
+        {
+          source: '/favicon.ico',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=86400',
+            },
+          ],
+        },
+      ]),
     ]
   },
   webpack: (config, { isServer, dev }) => {

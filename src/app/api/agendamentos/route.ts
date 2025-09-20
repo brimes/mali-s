@@ -129,10 +129,28 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     
-    // Converter dataHora string para Date object antes da validação
+    // Processar dataHora para evitar problemas de timezone
+    // Se vier como string YYYY-MM-DDTHH:mm, converter para Date local
+    let dataHoraProcessada
+    if (typeof body.dataHora === 'string') {
+      // Se a string não tem timezone (formato local), criar Date local
+      if (!body.dataHora.includes('Z') && !body.dataHora.includes('+') && !body.dataHora.includes('-', 10)) {
+        const [datePart, timePart] = body.dataHora.split('T')
+        const [year, month, day] = datePart.split('-').map(Number)
+        const [hour, minute] = timePart.split(':').map(Number)
+        
+        // Criar data UTC com os componentes locais (isso força o SQLite a armazenar o horário correto)
+        dataHoraProcessada = new Date(Date.UTC(year, month - 1, day, hour, minute, 0, 0))
+      } else {
+        dataHoraProcessada = new Date(body.dataHora)
+      }
+    } else {
+      dataHoraProcessada = new Date(body.dataHora)
+    }
+    
     const dataForValidation = {
       ...body,
-      dataHora: new Date(body.dataHora)
+      dataHora: dataHoraProcessada
     }
     
     const validatedData = agendamentoSchema.parse(dataForValidation)

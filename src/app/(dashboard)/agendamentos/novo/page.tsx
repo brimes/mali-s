@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -34,6 +34,7 @@ interface Servico {
 
 export default function NovoAgendamentoPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([])
@@ -52,7 +53,25 @@ export default function NovoAgendamentoPage() {
   useEffect(() => {
     // Carregar dados necessários para o formulário
     loadFormData()
+    
+    // Verificar se há parâmetros da URL (vindos da seleção do calendário)
+    processarParametrosURL()
   }, [])
+
+  const processarParametrosURL = () => {
+    const funcionarioId = searchParams.get('funcionarioId')
+    const dataInicio = searchParams.get('dataInicio')
+    const dataFim = searchParams.get('dataFim')
+    const duracao = searchParams.get('duracao')
+    
+    if (funcionarioId && dataInicio) {
+      setFormData(prev => ({
+        ...prev,
+        funcionarioId,
+        dataHora: dataInicio
+      }))
+    }
+  }
 
   const loadFormData = async () => {
     try {
